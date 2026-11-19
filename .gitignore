@@ -1,0 +1,8 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local task data (don't push personal to-do items)
+todos.csv
