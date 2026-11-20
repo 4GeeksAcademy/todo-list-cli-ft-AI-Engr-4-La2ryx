@@ -126,10 +126,14 @@ def main():
                 print("Error: There are no tasks to delete.", file=sys.stderr)
                 continue
             print_list()
+            print("  (Enter 0 to go back to the main menu)")
             try:
                 pos = int(input("Enter the position to delete: ").strip())
             except ValueError:
                 print("Error: Position must be a number.", file=sys.stderr)
+                continue
+            if pos == 0:
+                print("Returning to main menu...")
                 continue
             delete_task(pos)
 
