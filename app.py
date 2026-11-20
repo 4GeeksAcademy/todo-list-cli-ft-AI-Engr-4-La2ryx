@@ -1,11 +1,16 @@
 """
-Todo List CLI — A lightweight command-line tool for managing daily tasks.
+Todo List — Interactive menu-driven task manager with file persistence.
 
 Usage:
-    python app.py add <task_title>    Add a new task
-    python app.py list                Show all pending tasks
-    python app.py delete <position>   Delete a task by its position number
-    python app.py --help              Show this help message
+    python app.py
+
+Menu:
+    1. Add a task
+    2. List tasks
+    3. Delete a task
+    4. Save todos to file
+    5. Load todos from file
+    6. Exit
 """
 
 import sys
@@ -13,106 +18,134 @@ import os
 
 CSV_FILE = "todos.csv"
 
+# In-memory task list
+todos = []
 
-def load_tasks():
-    """Load tasks from the CSV file. Returns a list of task titles."""
-    tasks = []
-    if not os.path.exists(CSV_FILE):
-        return tasks
+
+# ── The five required functions ──────────────────────────────
+
+
+def add_one_task(title):
+    """Add a task with the given title to the in-memory list."""
+    todos.append(title)
+    print(f"Task added: \"{title}\"")
+
+
+def print_list():
+    """Display all pending tasks with their numeric position."""
+    if not todos:
+        print("No pending tasks. 🎉")
+        return
+    print("Pending tasks:")
+    for i, task in enumerate(todos, start=1):
+        print(f"  {i}. {task}")
+
+
+def delete_task(position):
+    """Delete a task by its 1-based position from the in-memory list."""
+    if not todos:
+        print("Error: There are no tasks to delete.", file=sys.stderr)
+        return
+    if position < 1 or position > len(todos):
+        print(f"Error: Position {position} is out of range. "
+              f"Valid positions are 1–{len(todos)}.", file=sys.stderr)
+        return
+    removed = todos.pop(position - 1)
+    print(f"Task deleted: \"{removed}\"")
+
+
+def save_todos():
+    """Save the in-memory task list to the CSV file."""
     try:
+        with open(CSV_FILE, "w") as f:
+            for task in todos:
+                f.write(task + "\n")
+        print(f"Saved {len(todos)} task(s) to {CSV_FILE}.")
+    except (IOError, OSError):
+        print("Error: Could not write to the tasks file.", file=sys.stderr)
+
+
+def load_todos():
+    """Load tasks from the CSV file into the in-memory list."""
+    global todos
+    if not os.path.exists(CSV_FILE):
+        print(f"No save file found ({CSV_FILE}). Starting with an empty list.")
+        return
+    try:
+        tasks = []
         with open(CSV_FILE, "r") as f:
             for line in f:
                 line = line.strip()
                 if line:
                     tasks.append(line)
+        todos = tasks
+        print(f"Loaded {len(todos)} task(s) from {CSV_FILE}.")
     except (IOError, OSError):
         print("Error: Could not read the tasks file.", file=sys.stderr)
-        sys.exit(1)
-    return tasks
 
 
-def save_tasks(tasks):
-    """Save a list of task titles to the CSV file (one per line)."""
-    try:
-        with open(CSV_FILE, "w") as f:
-            for task in tasks:
-                f.write(task + "\n")
-    except (IOError, OSError):
-        print("Error: Could not write to the tasks file.", file=sys.stderr)
-        sys.exit(1)
+# ── Interactive menu ─────────────────────────────────────────
 
 
-def add_task(title):
-    """Add a new task with the given title."""
-    tasks = load_tasks()
-    tasks.append(title)
-    save_tasks(tasks)
-    print(f"Task added: \"{title}\"")
-
-
-def list_tasks():
-    """Display all pending tasks with their numeric position."""
-    tasks = load_tasks()
-    if not tasks:
-        print("No pending tasks. 🎉")
-        return
-    print("Pending tasks:")
-    for i, task in enumerate(tasks, start=1):
-        print(f"  {i}. {task}")
-
-
-def delete_task(position):
-    """Delete a task by its 1-based position in the list."""
-    tasks = load_tasks()
-    if not tasks:
-        print("Error: There are no tasks to delete.", file=sys.stderr)
-        sys.exit(1)
-    if position < 1 or position > len(tasks):
-        print(f"Error: Position {position} is out of range. ", end="", file=sys.stderr)
-        print(f"Valid positions are 1–{len(tasks)}.", file=sys.stderr)
-        sys.exit(1)
-    removed = tasks.pop(position - 1)
-    save_tasks(tasks)
-    print(f"Task deleted: \"{removed}\"")
-
-
-def print_help():
-    print(__doc__.strip())
+def print_menu():
+    """Display the interactive menu options."""
+    print("\n" + "=" * 35)
+    print("        TODO LIST — MAIN MENU")
+    print("=" * 35)
+    print("  1. Add a task")
+    print("  2. List tasks")
+    print("  3. Delete a task")
+    print("  4. Save todos to file")
+    print("  5. Load todos from file")
+    print("  6. Exit")
+    print("=" * 35)
 
 
 def main():
-    if len(sys.argv) < 2 or sys.argv[1] in ("--help", "-h"):
-        print_help()
-        return
-
-    command = sys.argv[1]
-
-    if command == "add":
-        if len(sys.argv) < 3:
-            print("Error: Please provide a task title.", file=sys.stderr)
-            print("Usage: python app.py add \"<task_title>\"", file=sys.stderr)
-            sys.exit(1)
-        add_task(sys.argv[2])
-
-    elif command == "list":
-        list_tasks()
-
-    elif command == "delete":
-        if len(sys.argv) < 3:
-            print("Error: Please provide a position number.", file=sys.stderr)
-            print("Usage: python app.py delete <position>", file=sys.stderr)
-            sys.exit(1)
+    """Run the interactive todo list menu loop."""
+    while True:
+        print_menu()
         try:
-            position = int(sys.argv[2])
-        except ValueError:
-            print("Error: Position must be a number.", file=sys.stderr)
-            sys.exit(1)
-        delete_task(position)
+            choice = input("Enter your choice (1–6): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nGoodbye!")
+            sys.exit(0)
 
-    else:
-        print(f"Error: Unknown command \"{command}\".", file=sys.stderr)
-        print("Run 'python app.py --help' to see available commands.", file=sys.stderr)
-        sys.exit(1)
+        if choice == "1":
+            title = input("Task title: ").strip()
+            if title:
+                add_one_task(title)
+            else:
+                print("Error: Task title cannot be empty.", file=sys.stderr)
+
+        elif choice == "2":
+            print_list()
+
+        elif choice == "3":
+            if not todos:
+                print("Error: There are no tasks to delete.", file=sys.stderr)
+                continue
+            print_list()
+            try:
+                pos = int(input("Enter the position to delete: ").strip())
+            except ValueError:
+                print("Error: Position must be a number.", file=sys.stderr)
+                continue
+            delete_task(pos)
+
+        elif choice == "4":
+            save_todos()
+
+        elif choice == "5":
+            load_todos()
+
+        elif choice == "6":
+            print("Goodbye!")
+            break
+
+        else:
+            print("Error: Invalid choice. Please enter a number from 1 to 6.",
+                  file=sys.stderr)
 
 
 if __name__ == "__main__":
