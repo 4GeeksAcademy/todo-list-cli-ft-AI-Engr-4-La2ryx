@@ -1,23 +1,24 @@
 # Todo List CLI (Python)
 
-A simple command-line Todo List application built with Python that allows users to create, view, delete, save, and load tasks from a CSV file.
+A simple command-line Todo List application built with Python that allows users to create, view, delete, save, and load tasks from a CSV file via an interactive menu.
 
 ## Features
 
+- Interactive 1–6 numbered menu
 - Add new tasks
 - View all tasks with numbered positions
 - Delete tasks by number
 - Save tasks to a CSV file
 - Load tasks from a CSV file
 - Persistent storage between program runs
-- Simple command-line interface
+- Flask web server (localhost:3000)
 
 ## Technologies Used
 
 - Python 3
-- CSV module
-- File handling
-- Command-line arguments
+- File handling (CSV persistence)
+- Interactive CLI menu
+- Flask web interface (optional)
 
 ## Installation
 
@@ -36,24 +37,34 @@ cd todo-list-cli-ft-AI-Engr-4
 3. Run the application:
 
 ```bash
-python app.py --help
+python app.py
 ```
 
 ## Usage
 
-### Add a Task
+Run the program and follow the interactive menu:
 
-```bash
-python app.py add "Buy groceries"
+```
+===================================
+        TODO LIST — MAIN MENU
+===================================
+  1. Add a task
+  2. List tasks
+  3. Delete a task
+  4. Save todos to file
+  5. Load todos from file
+  6. Exit
+===================================
 ```
 
-### View All Tasks
+### Add a Task (option 1)
 
-```bash
-python app.py list
+```
+Task title: Buy groceries
+Task added: "Buy groceries"
 ```
 
-Example output:
+### View All Tasks (option 2)
 
 ```
 Pending tasks:
@@ -62,25 +73,34 @@ Pending tasks:
   3. Study for exam
 ```
 
-### Delete a Task
+### Delete a Task (option 3)
+
+Displays current tasks, then prompts for the position number to delete.
+
+### Save / Load (options 4 & 5)
+
+Persist the in-memory list to `todos.csv` or restore from it.
+
+### Web Server (optional)
 
 ```bash
-python app.py delete 2
+python server.py
 ```
 
-### Persistence
-
-Tasks are automatically saved to `todos.csv` and loaded back when you run the app again — no separate save/load commands needed.
+Then open `http://localhost:3000` in your browser.
 
 ## Project Structure
 
 ```
 .
-├── app.py
-├── test.py
-├── todos.csv
+├── app.py          # Interactive CLI application
+├── test.py         # Unit tests (17 tests)
+├── server.py       # Flask web server
+├── main.py         # Minimal hello-world script
+├── todos.csv       # Task data file
 ├── .gitignore
-└── README.md
+├── README.md
+└── README.es.md
 ```
 
 ## Testing
@@ -91,13 +111,24 @@ Run the test suite with:
 python test.py
 ```
 
+All 17 tests should pass, covering:
+
+| Test | Coverage |
+|------|----------|
+| `add_one_task` | Single, multiple, special characters |
+| `print_list` | Empty list, populated list |
+| `delete_task` | First, middle, last, only, out-of-range, empty |
+| `save_todos` + `load_todos` | Round-trip, single-task, empty, missing-file, compose |
+
 ## What I Learned
 
 During this project, I practiced:
 
-- Python functions
-- Lists and data management
+- Python functions operating on a shared in-memory list
+- Interactive CLI menu patterns
 - Reading and writing CSV files
+- Unit testing with `unittest`
+- Web server integration
 - Command-line application development
 - Error handling and user input validation
 - Git and GitHub workflow

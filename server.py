@@ -1,37 +1,127 @@
 try:
-    # try to import flask, or return error if has not been installed
-    from flask import Flask
-    from flask import send_from_directory
+    from flask import Flask, request, redirect, url_for
 except ImportError:
     print("You don't have Flask installed, run `$ pip3 install flask` and try again")
     exit(1)
 
-import os, subprocess
+import os
+import app as todo_app
 
-static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), './')
 app = Flask(__name__)
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 #disable cache
 
-# Serving the index file
-@app.route('/', methods=['GET'])
-def serve_dir_directory_index():
-    if os.path.exists("app.py"):
-        # if app.py exists we use the render function
-        out = subprocess.Popen(['python3','app.py'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        stdout,stderr = out.communicate()
-        return stdout if out.returncode == 0 else f"<pre style='color: red;'>{stdout.decode('utf-8')}</pre>"
-    if os.path.exists("index.html"):
-        return send_from_directory(static_file_dir, 'index.html')
+HTML_TEMPLATE = """\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+               background: #f0f2f5; display: flex; justify-content: center; padding: 2rem 1rem; }}
+        .container {{ max-width: 600px; width: 100%; background: white; border-radius: 12px;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 2rem; }}
+        h1 {{ text-align: center; color: #1a1a2e; margin-bottom: 1.5rem; font-size: 1.8rem; }}
+        .form-row {{ display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }}
+        .form-row input {{ flex: 1; padding: 0.6rem 1rem; border: 2px solid #e0e0e0; border-radius: 8px;
+                           font-size: 1rem; outline: none; }}
+        .form-row input:focus {{ border-color: #4361ee; }}
+        .btn {{ padding: 0.6rem 1.2rem; border: none; border-radius: 8px; font-size: 1rem;
+                cursor: pointer; color: white; transition: background 0.2s; text-decoration: none;
+                display: inline-block; }}
+        .btn-add {{ background: #4361ee; }} .btn-add:hover {{ background: #3a56d4; }}
+        .btn-del {{ background: #e63946; padding: 0.3rem 0.7rem; font-size: 0.85rem; }}
+        .btn-del:hover {{ background: #c1121f; }}
+        .btn-save {{ background: #2a9d8f; }} .btn-save:hover {{ background: #21867a; }}
+        .btn-load {{ background: #e9c46a; color: #333; }} .btn-load:hover {{ background: #d4b05a; }}
+        .task-list {{ list-style: none; margin: 1rem 0; }}
+        .task-item {{ display: flex; justify-content: space-between; align-items: center;
+                      padding: 0.75rem 1rem; background: #f8f9fa; border-radius: 8px; margin-bottom: 0.5rem;
+                      border-left: 4px solid #4361ee; }}
+        .task-item .num {{ color: #888; margin-right: 0.5rem; font-weight: 600; }}
+        .empty-msg {{ text-align: center; color: #888; padding: 2rem; font-size: 1.1rem; }}
+        .msg {{ padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.95rem; }}
+        .msg-success {{ background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }}
+        .msg-error {{ background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }}
+        .actions {{ display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Todo List</h1>
+        {message_html}
+        <form method="POST" action="/add" class="form-row">
+            <input type="text" name="title" placeholder="Enter a new task..." required>
+            <button type="submit" class="btn btn-add">Add</button>
+        </form>
+        {tasks_html}
+        <div class="actions">
+            <a href="/save" class="btn btn-save">💾 Save to file</a>
+            <a href="/load" class="btn btn-load">📂 Load from file</a>
+        </div>
+    </div>
+</body>
+</html>"""
+
+
+def render_page(message="", msg_type="success"):
+    """Render the todo list as an HTML page."""
+    if todo_app.todos:
+        tasks = "".join(
+            f'<li class="task-item">'
+            f'<span><span class="num">{i}.</span> {task}</span>'
+            f'<a href="/delete/{i}" class="btn btn-del">✕</a>'
+            f'</li>\n'
+            for i, task in enumerate(todo_app.todos, start=1)
+        )
+        tasks_html = f'<ul class="task-list">{tasks}</ul>'
     else:
-        return "<h1 align='center'>404</h1><h2 align='center'>Missing index.html file</h2><p align='center'><img src='https://github.com/4GeeksAcademy/html-hello/blob/main/.vscode/rigo-baby.jpeg?raw=true' /></p>"
+        tasks_html = '<p class="empty-msg">No pending tasks. 🎉</p>'
 
-# Serving any other image
-@app.route('/<path:path>', methods=['GET'])
-def serve_any_other_file(path):
-    if not os.path.isfile(os.path.join(static_file_dir, path)):
-        path = os.path.join(path, 'index.html')
-    response = send_from_directory(static_file_dir, path)
-    response.cache_control.max_age = 0 # avoid cache memory
-    return response
+    if message:
+        msg_html = f'<div class="msg msg-{msg_type}">{message}</div>'
+    else:
+        msg_html = ""
 
-app.run(host='0.0.0.0',port=3000, debug=True, extra_files=['./',])
+    return HTML_TEMPLATE.format(message_html=msg_html, tasks_html=tasks_html)
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_page()
+
+
+@app.route('/add', methods=['POST'])
+def add():
+    title = request.form.get('title', '').strip()
+    if not title:
+        return render_page("Error: Task title cannot be empty.", "error")
+    todo_app.add_one_task(title)
+    return redirect(url_for('index'))
+
+
+@app.route('/delete/<int:pos>', methods=['GET'])
+def delete(pos):
+    if not todo_app.todos:
+        return render_page("Error: There are no tasks to delete.", "error")
+    if pos < 1 or pos > len(todo_app.todos):
+        return render_page(f"Error: Position {pos} is out of range.", "error")
+    todo_app.delete_task(pos)
+    return redirect(url_for('index'))
+
+
+@app.route('/save', methods=['GET'])
+def save():
+    todo_app.save_todos()
+    return redirect(url_for('index'))
+
+
+@app.route('/load', methods=['GET'])
+def load():
+    todo_app.load_todos()
+    return redirect(url_for('index'))
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000, debug=True)
