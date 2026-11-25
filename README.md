@@ -93,14 +93,14 @@ Then open `http://localhost:3000` in your browser.
 
 ```
 .
-├── app.py          # Interactive CLI application
+├── app.py          # Interactive CLI application (5 required functions + menu)
 ├── test.py         # Unit tests (17 tests)
-├── server.py       # Flask web server
-├── main.py         # Minimal hello-world script
-├── todos.csv       # Task data file
-├── .gitignore
-├── README.md
-└── README.es.md
+├── server.py       # Flask web server (optional)
+├── main.py         # Minimal hello-world script (starter template)
+├── learn.json      # Project metadata
+├── .gitignore      # Ignores __pycache__ and todos.csv
+├── README.md       # This file
+└── README.es.md    # Spanish translation
 ```
 
 ## Testing

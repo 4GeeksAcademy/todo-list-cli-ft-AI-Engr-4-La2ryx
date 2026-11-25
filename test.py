@@ -1,5 +1,5 @@
 """
-Tests for the interactive Todo List menu (app.py).
+Official tests for the Todo List CLI (app.py).
 
 The five required module-level functions tested:
     - add_one_task(title)
@@ -8,7 +8,7 @@ The five required module-level functions tested:
     - save_todos()
     - load_todos()
 
-The in-memory list is `app.todos`.
+The in-memory list is `app.todos` — a list of plain strings.
 
 Run with:
     python test.py              # quick test runner

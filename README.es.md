@@ -1,23 +1,149 @@
-# Python Hello
+# Lista de Tareas CLI (Python)
 
-El boilerplate más básico para comenzar un proyecto en Python en 4Geeks. Inicia tu primer proyecto en Python desde cero.
+Una aplicación simple de lista de tareas por línea de comandos construida con Python que permite a los usuarios crear, ver, eliminar, guardar y cargar tareas desde un archivo CSV mediante un menú interactivo.
 
-## ¿Qué hacer a continuación?
+## Características
 
-Abre el archivo `main.py` y comienza a escribir tu código.
+- Menú interactivo numerado del 1 al 6
+- Agregar nuevas tareas
+- Ver todas las tareas con posiciones numeradas
+- Eliminar tareas por número
+- Guardar tareas en un archivo CSV
+- Cargar tareas desde un archivo CSV
+- Almacenamiento persistente entre ejecuciones
+- Servidor web Flask (opcional)
 
-Ejecuta tu código escribiendo el siguiente comando en tu terminal:
+## Tecnologías Utilizadas
+
+- Python 3
+- Manejo de archivos (persistencia CSV)
+- Menú CLI interactivo
+- Interfaz web Flask (opcional)
+
+## Instalación
+
+1. Clona el repositorio:
 
 ```bash
-$ python main.py
+git clone https://github.com/La2ryx/todo-list-cli-ft-AI-Engr-4.git
 ```
 
-Puedes crear e incluir tantos archivos de Python (también conocidos como módulos) como desees utilizando las declaraciones de importación.
+2. Navega al directorio del proyecto:
 
-## Requisitos
+```bash
+cd todo-list-cli-ft-AI-Engr-4
+```
 
-Asegúrate de tener Python instalado en tu computadora. Te recomendamos encarecidamente [instalar Python a través de Pyenv](https://4geeks.com/es/how-to/que-es-pyenv-y-como-instalar-pyenv) para evitar conflictos de versiones en el futuro.
+3. Ejecuta la aplicación:
 
-### Contribuidores
+```bash
+python app.py
+```
 
-Esta plantilla fue creada como parte de los [Recursos de Python de 4Geeks](https://4geeks.com/es/technology/python) para el aprendizaje en [4Geeks.com](https://4geeks.com) por [Alejandro Sanchez](https://twitter.com/alesanchezr) y [muchos otros contribuyentes](https://github.com/4GeeksAcademy/python-hello/graphs/contributors).
+## Uso
+
+Ejecuta el programa y sigue el menú interactivo:
+
+```
+===================================
+    LISTA DE TAREAS — MENÚ PRINCIPAL
+===================================
+  1. Agregar tarea
+  2. Listar tareas
+  3. Eliminar tarea
+  4. Guardar tareas en archivo
+  5. Cargar tareas desde archivo
+  6. Salir
+===================================
+```
+
+### Agregar una tarea (opción 1)
+
+```
+Título de la tarea: Comprar víveres
+Tarea agregada: "Comprar víveres"
+```
+
+### Ver todas las tareas (opción 2)
+
+```
+Tareas pendientes:
+  1. Comprar víveres
+  2. Terminar proyecto de Python
+  3. Estudiar para el examen
+```
+
+### Eliminar una tarea (opción 3)
+
+Muestra las tareas actuales y luego solicita el número de posición a eliminar.
+
+### Guardar / Cargar (opciones 4 y 5)
+
+Persiste la lista en memoria en `todos.csv` o la restaura desde el archivo.
+
+### Servidor Web (opcional)
+
+```bash
+python server.py
+```
+
+Luego abre `http://localhost:3000` en tu navegador.
+
+## Estructura del Proyecto
+
+```
+.
+├── app.py          # Aplicación CLI interactiva (5 funciones + menú)
+├── test.py         # Pruebas unitarias (17 pruebas)
+├── server.py       # Servidor web Flask (opcional)
+├── main.py         # Script hello-world mínimo (plantilla inicial)
+├── learn.json      # Metadatos del proyecto
+├── .gitignore      # Ignora __pycache__ y todos.csv
+├── README.md       # Documentación en inglés
+└── README.es.md    # Este archivo
+```
+
+## Pruebas
+
+Ejecuta el conjunto de pruebas con:
+
+```bash
+python test.py
+```
+
+Las 17 pruebas deberían pasar, cubriendo:
+
+| Prueba | Cobertura |
+|--------|-----------|
+| `add_one_task` | Simple, múltiple, caracteres especiales |
+| `print_list` | Lista vacía, lista poblada |
+| `delete_task` | Primero, medio, último, único, fuera de rango, vacío |
+| `save_todos` + `load_todos` | Ida y vuelta, tarea única, vacío, archivo faltante, composición |
+
+## Lo que Aprendí
+
+Durante este proyecto practiqué:
+
+- Funciones de Python operando sobre una lista compartida en memoria
+- Patrones de menú CLI interactivo
+- Lectura y escritura de archivos CSV
+- Pruebas unitarias con `unittest`
+- Integración con servidor web
+- Desarrollo de aplicaciones de línea de comandos
+- Manejo de errores y validación de entrada de usuario
+- Flujo de trabajo con Git y GitHub
+
+## Mejoras Futuras
+
+- Estado de completado de tareas
+- Prioridades de tareas
+- Fechas de vencimiento
+- Búsqueda y filtro de tareas
+- Salida de terminal con colores
+- Mayor cobertura de pruebas
+
+## Autor
+
+**Larry**
+
+GitHub: [https://github.com/La2ryx](https://github.com/La2ryx)

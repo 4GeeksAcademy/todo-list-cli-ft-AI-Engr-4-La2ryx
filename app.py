@@ -1,11 +1,12 @@
 """
 Todo List — Interactive menu-driven task manager with file persistence.
 
-Tasks now support:
-  - Title
-  - Priority (1–4, where 1 is highest)
-  - Done / undone status
-  - Edit title
+The five required module-level functions:
+    - add_one_task(title)   — add a task to the shared in-memory list
+    - print_list()          — display all tasks with 1-based numbering
+    - delete_task(position) — remove a task by its 1-based position
+    - save_todos()          — persist the list to a CSV file
+    - load_todos()          — restore the list from a CSV file
 
 Usage:
     python app.py
@@ -14,11 +15,9 @@ Menu:
     1. Add a task
     2. List tasks
     3. Delete a task
-    4. Toggle done/undone
-    5. Edit a task
-    6. Save todos to file
-    7. Load todos from file
-    8. Exit
+    4. Save todos to file
+    5. Load todos from file
+    6. Exit
 """
 
 import sys
@@ -26,41 +25,31 @@ import os
 
 CSV_FILE = "todos.csv"
 
-# In-memory task list — each task is a dict: {"title": str, "priority": int, "done": bool}
+# In-memory task list — a list of plain strings, one per task title.
 todos = []
-
-
-# ── Helper ───────────────────────────────────────────────────
-
-
-def _make_task(title, priority=2):
-    """Return a new task dict."""
-    return {"title": title, "priority": max(1, min(4, priority)), "done": False}
 
 
 # ── Core functions ──────────────────────────────────────────
 
 
-def add_one_task(title, priority=2):
-    """Add a task with the given title and priority."""
-    todos.append(_make_task(title, priority))
-    print(f"Task added: \"{title}\" (priority {priority})")
+def add_one_task(title):
+    """Add a task (plain string) to the shared in-memory list."""
+    todos.append(title)
+    print(f"Task added: \"{title}\"")
 
 
 def print_list():
-    """Display all tasks with their number, priority, and status."""
+    """Display all tasks with their 1-based position number."""
     if not todos:
         print("No pending tasks. 🎉")
         return
-    print("Tasks:")
+    print("Pending tasks:")
     for i, t in enumerate(todos, start=1):
-        status = "✓" if t["done"] else " "
-        pri = t["priority"]
-        print(f"  {i}. [{status}] (P{pri}) {t['title']}")
+        print(f"  {i}. {t}")
 
 
 def delete_task(position):
-    """Delete a task by its 1-based position."""
+    """Delete a task by its 1-based position. Prints an error on failure."""
     if not todos:
         print("Error: There are no tasks to delete.", file=sys.stderr)
         return
@@ -69,52 +58,22 @@ def delete_task(position):
               f"Valid positions are 1–{len(todos)}.", file=sys.stderr)
         return
     removed = todos.pop(position - 1)
-    print(f"Task deleted: \"{removed['title']}\"")
-
-
-def toggle_task(position):
-    """Toggle the done status of a task by its 1-based position."""
-    if not todos:
-        print("Error: There are no tasks.", file=sys.stderr)
-        return
-    if position < 1 or position > len(todos):
-        print(f"Error: Position {position} is out of range.", file=sys.stderr)
-        return
-    t = todos[position - 1]
-    t["done"] = not t["done"]
-    status = "done" if t["done"] else "undone"
-    print(f"Task \"{t['title']}\" marked as {status}.")
-
-
-def edit_task(position, new_title, new_priority=None):
-    """Edit the title and optionally the priority of a task."""
-    if not todos:
-        print("Error: There are no tasks.", file=sys.stderr)
-        return
-    if position < 1 or position > len(todos):
-        print(f"Error: Position {position} is out of range.", file=sys.stderr)
-        return
-    t = todos[position - 1]
-    old_title = t["title"]
-    t["title"] = new_title
-    if new_priority is not None:
-        t["priority"] = max(1, min(4, new_priority))
-    print(f"Task updated: \"{old_title}\" → \"{t['title']}\"")
+    print(f"Task deleted: \"{removed}\"")
 
 
 def save_todos():
-    """Save the in-memory task list to the CSV file (title,priority,done)."""
+    """Save the in-memory task list to the CSV file (one title per line)."""
     try:
         with open(CSV_FILE, "w") as f:
             for t in todos:
-                f.write(f"{t['title']}|{t['priority']}|{int(t['done'])}\n")
+                f.write(f"{t}\n")
         print(f"Saved {len(todos)} task(s) to {CSV_FILE}.")
     except (IOError, OSError):
         print("Error: Could not write to the tasks file.", file=sys.stderr)
 
 
 def load_todos():
-    """Load tasks from the CSV file (title|priority|done format)."""
+    """Load tasks from the CSV file into the in-memory list."""
     global todos
     if not os.path.exists(CSV_FILE):
         print(f"No save file found ({CSV_FILE}). Starting with an empty list.")
@@ -124,13 +83,8 @@ def load_todos():
         with open(CSV_FILE, "r") as f:
             for line in f:
                 line = line.strip()
-                if not line:
-                    continue
-                parts = line.split("|")
-                title = parts[0]
-                priority = int(parts[1]) if len(parts) > 1 else 2
-                done = bool(int(parts[2])) if len(parts) > 2 else False
-                tasks.append({"title": title, "priority": priority, "done": done})
+                if line:
+                    tasks.append(line)
         todos = tasks
         print(f"Loaded {len(todos)} task(s) from {CSV_FILE}.")
     except (IOError, OSError):
@@ -148,11 +102,9 @@ def print_menu():
     print("  1. Add a task")
     print("  2. List tasks")
     print("  3. Delete a task")
-    print("  4. Toggle done/undone")
-    print("  5. Edit a task")
-    print("  6. Save todos to file")
-    print("  7. Load todos from file")
-    print("  8. Exit")
+    print("  4. Save todos to file")
+    print("  5. Load todos from file")
+    print("  6. Exit")
     print("=" * 40)
 
 
@@ -161,7 +113,7 @@ def main():
     while True:
         print_menu()
         try:
-            choice = input("Enter your choice (1–8): ").strip()
+            choice = input("Enter your choice (1–6): ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nGoodbye!")
             sys.exit(0)
@@ -171,9 +123,7 @@ def main():
             if not title:
                 print("Error: Task title cannot be empty.", file=sys.stderr)
                 continue
-            pri_str = input("Priority (1-4, default 2): ").strip()
-            priority = int(pri_str) if pri_str.isdigit() else 2
-            add_one_task(title, priority)
+            add_one_task(title)
 
         elif choice == "2":
             print_list()
@@ -194,53 +144,17 @@ def main():
             delete_task(pos)
 
         elif choice == "4":
-            if not todos:
-                print("Error: There are no tasks.", file=sys.stderr)
-                continue
-            print_list()
-            print("  (Enter 0 to go back)")
-            try:
-                pos = int(input("Enter the position to toggle: ").strip())
-            except ValueError:
-                print("Error: Position must be a number.", file=sys.stderr)
-                continue
-            if pos == 0:
-                continue
-            toggle_task(pos)
-
-        elif choice == "5":
-            if not todos:
-                print("Error: There are no tasks.", file=sys.stderr)
-                continue
-            print_list()
-            print("  (Enter 0 to go back)")
-            try:
-                pos = int(input("Enter the position to edit: ").strip())
-            except ValueError:
-                print("Error: Position must be a number.", file=sys.stderr)
-                continue
-            if pos == 0:
-                continue
-            new_title = input("New title: ").strip()
-            if not new_title:
-                print("Error: Title cannot be empty.", file=sys.stderr)
-                continue
-            pri_str = input("New priority (1-4, press Enter to keep): ").strip()
-            new_pri = int(pri_str) if pri_str.isdigit() else None
-            edit_task(pos, new_title, new_pri)
-
-        elif choice == "6":
             save_todos()
 
-        elif choice == "7":
+        elif choice == "5":
             load_todos()
 
-        elif choice == "8":
+        elif choice == "6":
             print("Goodbye!")
             break
 
         else:
-            print("Error: Invalid choice. Please enter a number from 1 to 8.",
+            print("Error: Invalid choice. Please enter a number from 1 to 6.",
                   file=sys.stderr)
 
 
